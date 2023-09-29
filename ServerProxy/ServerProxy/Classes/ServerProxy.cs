@@ -11,7 +11,8 @@ public class ServerProxy
     private static async Task OnBeforeRequest(object sender, SessionEventArgs e)
     {
         var hostname = e.HttpClient.Request.RequestUri.Host.ToLower();
-        Console.WriteLine(hostname);
+        Console.WriteLine(GetHostname(hostname));
+        
         if (IsSiteWithHPKP(hostname))
         {
             // Skip interception for sites with HPKP
@@ -115,5 +116,24 @@ public class ServerProxy
         }
 
         Console.WriteLine($"Your proxy port {port} doesnt exist.");
+    }
+
+    public static string GetHostname(string hostname)
+    {
+        switch (hostname.Split(".").Length)
+        {
+            case 2:
+                return $"You are on: {hostname.Split(".")[0]}";
+            
+            case 3:
+                return $"You are on: {hostname.Split(".")[1]}";
+            
+            case 4:
+                return $"You are on: {hostname.Split(".")[2]}";
+            
+            default:
+                return $"You are on: {hostname}";
+                
+        }
     }
 }
