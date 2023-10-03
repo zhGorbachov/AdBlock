@@ -4,7 +4,8 @@ It used reverse proxy-server
 
 plan for future:<br>
 do server-proxy(completed);<br>
-do filter ads(completed);<br>
+do filter ads(50% completed);<br>
+do filter ads in the video;<br>
 do logs(uncompleted);<br>
 do ui(uncompleted);<br>
 
