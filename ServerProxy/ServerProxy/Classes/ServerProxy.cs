@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Text;
+using HtmlAgilityPack;
 using Titanium.Web.Proxy.EventArguments;
 using Titanium.Web.Proxy;
 using Titanium.Web.Proxy.Models;
@@ -11,7 +12,7 @@ public class ServerProxy
     private static async Task OnBeforeRequest(object sender, SessionEventArgs e)
     {
         var hostname = e.HttpClient.Request.RequestUri.Host.ToLower();
-        Console.WriteLine(GetHostname(hostname));
+        // Console.WriteLine(GetHostname(hostname));
         
         if (IsSiteWithHPKP(hostname))
         {
@@ -29,62 +30,81 @@ public class ServerProxy
 
     private static async Task OnBeforeResponse(object sender, SessionEventArgs e)
     {
-        if (e.WebSession.Response != null)
+        if (!e.HttpClient.Response.HasBody || !e.HttpClient.Response.ContentType?.Contains("text/html") == true)
         {
-            // Check the content type of the response to make sure it's a web page
-            string contentType = e.WebSession.Response.ContentType?.Trim().ToLower();
-            if (contentType != null && contentType.StartsWith("text/html"))
-            {
-                // Read the response body
-                var responseBodyBytes = await e.GetResponseBody();
-                if (responseBodyBytes != null)
-                {
-                    // Convert the response body to a string
-                    string responseBody = Encoding.UTF8.GetString(responseBodyBytes);
+            return;
+        }
 
-                    // Check for known ad-related content in the response
-                    if (AdBlock.ContainsAds(responseBody))
-                    {
-                        // Block the response by setting an empty body
-                        e.SetResponseBody(new byte[0]);
-                    }
-                }
+        var bodyBytes = await e.GetResponseBody();
+        var bodyString = Encoding.UTF8.GetString(bodyBytes);
+
+        var doc = new HtmlAgilityPack.HtmlDocument();
+        doc.LoadHtml(bodyString);
+        
+        RemoveNodes(doc, "//script[contains(@src, 'known-ad-domain')]");
+        RemoveNodes(doc, "//*[contains(@class, 'ad-banner')]");
+        RemoveNodes(doc, "//*[contains(@class, 'ad-container')]");
+        RemoveNodes(doc, "//*[contains(@class, 'ad-wrapper')]");
+        RemoveNodes(doc, "//*[contains(@class, 'ad-slot')]");
+        RemoveNodes(doc, "//*[contains(@class, 'adsbox')]");
+        RemoveNodes(doc, "//iframe");
+        RemoveNodes(doc, "//iframe[contains(@src, 'doubleclick.net')]");
+        RemoveNodes(doc, "//iframe[contains(@src, 'adnxs.com')]");
+        RemoveNodes(doc, "//script[contains(@src, 'doubleclick.net')]");
+        RemoveNodes(doc, "//script[contains(@src, 'adnxs.com')]");
+        RemoveNodes(doc, "//script[contains(@src, 'adservice.google.com')]");
+        RemoveNodes(doc, "//div[contains(@id, 'google_ads')]");
+        RemoveNodes(doc, "//div[contains(@id, 'adtech_banner')]");
+        RemoveNodes(doc, "//div[contains(@data-ad, 'true')]");
+        RemoveNodes(doc, "//*[contains(@class, 'popup-ad')]");
+        RemoveNodes(doc, "//*[contains(@class, 'modal-ad')]");
+        RemoveNodes(doc, "//*[contains(@class, 'adw-mascot--container')]");
+        
+
+        var modifiedBodyString = doc.DocumentNode.OuterHtml;
+        var modifiedBodyBytes = Encoding.UTF8.GetBytes(modifiedBodyString);
+    
+        e.SetResponseBody(modifiedBodyBytes);
+    }
+
+    private static void RemoveNodes(HtmlDocument doc, string xpath)
+    {
+        var nodesToRemove = doc.DocumentNode.SelectNodes(xpath);
+        if (nodesToRemove != null)
+        {
+            foreach (var node in nodesToRemove)
+            {
+                node.Remove();
             }
         }
     }
-
+    
     private static bool IsSiteWithHPKP(string hostname)
     {
         try
         {
-            // Create a WebClient to fetch the site's headers
-            using (var client = new System.Net.WebClient())
+            var request = (HttpWebRequest)WebRequest.Create("https://" + hostname);
+            request.Method = "HEAD";
+        
+            using (var response = (HttpWebResponse)request.GetResponse())
             {
-                // Fetch the headers for the given hostname
-                var headers = client.DownloadString("https://" + hostname);
-
-                // Check if the headers contain the Public-Key-Pins header
-                return headers.Contains("Public-Key-Pins");
+                return response.Headers["Public-Key-Pins"] != null;
             }
         }
-        catch (System.Net.WebException ex)
+        catch (WebException ex)
         {
-            // Handle specific HTTP 400 Bad Request error
             if (ex.Response is HttpWebResponse response && response.StatusCode == HttpStatusCode.BadRequest)
             {
-                // Log or handle the bad request error as needed
-                Console.WriteLine("HTTP 400 Bad Request: The site may not support HPKP.");
+                // Console.WriteLine("HTTP 400 Bad Request: The site may not support HPKP.");
                 return false;
             }
             else
             {
-                // Handle other exceptions or rethrow them
                 throw;
             }
         }
         catch (Exception)
         {
-            // Handle any other exceptions here
             return false;
         }
     }
