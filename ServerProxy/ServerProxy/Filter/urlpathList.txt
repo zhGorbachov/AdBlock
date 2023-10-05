@@ -1,0 +1,10 @@
+googleads.g.doubleclick.net
+youtube.com/api/stats/ads
+youtube.com/pagead/
+youtube.com/get_midroll_info
+youtube.com/ptracking
+youtube.com/videogoodput 
+youtube.com/ad_data_204 
+youtube.com/ad_status.js
+youtube.com/ads.js
+youtube.com/annotations_invideo.js
