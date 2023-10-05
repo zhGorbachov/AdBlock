@@ -9,22 +9,28 @@ namespace ServerProxy.Classes;
 
 public class ServerProxy
 {
+    private static List<string> _xpathList = File.ReadAllLines("../../../Filter/xpathList.txt").ToList();
+    private static List<string> _urlpathList = File.ReadAllLines("../../../Filter/urlpathList.txt").ToList();
+    
     private static async Task OnBeforeRequest(object sender, SessionEventArgs e)
     {
         var hostname = e.HttpClient.Request.RequestUri.Host.ToLower();
-        // Console.WriteLine(GetHostname(hostname));
+        Console.WriteLine(GetHostname(hostname));
         
         if (IsSiteWithHPKP(hostname))
         {
-            // Skip interception for sites with HPKP
             return;
         }
 
-        // Continue with your ad-blocking logic for other sites
         if (AdBlock.IsAdRequest(e.HttpClient.Request.RequestUri.ToString()))
         {
-            // Block the request by returning a custom response
-            e.Ok("tesat");
+            e.Ok("Ad blocked");
+        }
+        
+        if (_urlpathList.Any(adPath => e.HttpClient.Request.RequestUri.ToString().Contains(adPath)))
+        {
+            e.Ok("Ad blocked by proxy");
+            return;
         }
     }
 
@@ -40,30 +46,15 @@ public class ServerProxy
 
         var doc = new HtmlAgilityPack.HtmlDocument();
         doc.LoadHtml(bodyString);
-        
-        RemoveNodes(doc, "//script[contains(@src, 'known-ad-domain')]");
-        RemoveNodes(doc, "//*[contains(@class, 'ad-banner')]");
-        RemoveNodes(doc, "//*[contains(@class, 'ad-container')]");
-        RemoveNodes(doc, "//*[contains(@class, 'ad-wrapper')]");
-        RemoveNodes(doc, "//*[contains(@class, 'ad-slot')]");
-        RemoveNodes(doc, "//*[contains(@class, 'adsbox')]");
-        RemoveNodes(doc, "//iframe");
-        RemoveNodes(doc, "//iframe[contains(@src, 'doubleclick.net')]");
-        RemoveNodes(doc, "//iframe[contains(@src, 'adnxs.com')]");
-        RemoveNodes(doc, "//script[contains(@src, 'doubleclick.net')]");
-        RemoveNodes(doc, "//script[contains(@src, 'adnxs.com')]");
-        RemoveNodes(doc, "//script[contains(@src, 'adservice.google.com')]");
-        RemoveNodes(doc, "//div[contains(@id, 'google_ads')]");
-        RemoveNodes(doc, "//div[contains(@id, 'adtech_banner')]");
-        RemoveNodes(doc, "//div[contains(@data-ad, 'true')]");
-        RemoveNodes(doc, "//*[contains(@class, 'popup-ad')]");
-        RemoveNodes(doc, "//*[contains(@class, 'modal-ad')]");
-        RemoveNodes(doc, "//*[contains(@class, 'adw-mascot--container')]");
-        
+
+        foreach (var filter in _xpathList.Select(xpath => xpath.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)))
+        {
+            RemoveNodes(doc, filter[0]);
+        }
 
         var modifiedBodyString = doc.DocumentNode.OuterHtml;
         var modifiedBodyBytes = Encoding.UTF8.GetBytes(modifiedBodyString);
-    
+
         e.SetResponseBody(modifiedBodyBytes);
     }
 
@@ -72,10 +63,31 @@ public class ServerProxy
         var nodesToRemove = doc.DocumentNode.SelectNodes(xpath);
         if (nodesToRemove != null)
         {
+            Console.WriteLine($"{xpath}:    {nodesToRemove}");
             foreach (var node in nodesToRemove)
             {
+                Console.WriteLine(node);
                 node.Remove();
             }
+        }
+    }
+    
+    private static string ConvertPatternToXPath(string pattern)
+    {
+        
+        if (pattern.StartsWith("."))
+        {
+            var txt = $"//*[contains(@class, '{pattern.Remove(0, 1)}')]";
+            Console.WriteLine($"{pattern}:    {txt}");
+            return txt;
+        }
+        else if (pattern.StartsWith("#"))
+        {
+            return $"//*[@id='{pattern.Substring(1)}']";
+        }
+        else
+        {
+            return pattern;  // предполагается, что это уже XPath
         }
     }
     
@@ -115,6 +127,7 @@ public class ServerProxy
 
         proxyServer.BeforeRequest += OnBeforeRequest;
         proxyServer.BeforeResponse += OnBeforeResponse;
+        
         if (port > 1 && port < 100000)
         {
             var explicitEndPoint = new ExplicitProxyEndPoint(System.Net.IPAddress.Any, port, true);
@@ -129,6 +142,7 @@ public class ServerProxy
             proxyServer.CertificateManager.TrustRootCertificate(true);
 
             Console.WriteLine($"Proxy server listening on port {port}. Press any key to exit...");
+            
             Console.ReadKey();
 
             proxyServer.Stop();
@@ -140,20 +154,12 @@ public class ServerProxy
 
     public static string GetHostname(string hostname)
     {
-        switch (hostname.Split(".").Length)
+        return hostname.Split(".").Length switch
         {
-            case 2:
-                return $"You are on: {hostname.Split(".")[0]}";
-            
-            case 3:
-                return $"You are on: {hostname.Split(".")[1]}";
-            
-            case 4:
-                return $"You are on: {hostname.Split(".")[2]}";
-            
-            default:
-                return $"You are on: {hostname}";
-                
-        }
+            2 => $"You are on: {hostname.Split(".")[0]}",
+            3 => $"You are on: {hostname.Split(".")[1]}",
+            4 => $"You are on: {hostname.Split(".")[2]}",
+            _ => $"You are on: {hostname}"
+        };
     }
 }
