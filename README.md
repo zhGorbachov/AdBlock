@@ -3,17 +3,17 @@
 <hr>
 
 #### Features:
-##### - Blocks ad-related requests at the proxy level.
-##### - Easily expandable with a custom list of domains or paths to block.
-##### - Console-based feedback for blocked requests.
+- ##### Blocks ad-related requests at the proxy level.
+- ##### Easily expandable with a custom list of domains or paths to block.
+- ##### Console-based feedback for blocked requests.
 <hr>
 
 #### Tasks on the project:
-##### - Creating a proxy server - (completed);
-##### - Filtering regular advertising, banners, scripts, etc - (50% completed);
-##### - Filtering ads in YouTube videos - (uncompleted);
-##### - Logging about errors and blocked advertisements - (completed);
-##### - User-interface with starting and stopping the proxy server - (uncompleted);
+- ##### Creating a proxy server - (completed);
+- ##### Filtering regular advertising, banners, scripts, etc - (50% completed);
+- ##### Filtering ads in YouTube videos - (uncompleted);
+- ##### Logging about errors and blocked advertisements - (completed);
+- ##### User-interface with starting and stopping the proxy server - (uncompleted);
 <hr>
 
 #### Firstly, when you start it at the first time, you will need to agree this cetrificate to work with it adblocker:
