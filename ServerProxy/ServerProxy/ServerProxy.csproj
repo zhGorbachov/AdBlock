@@ -8,6 +8,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackageReference Include="HtmlAgilityPack" Version="1.11.53" />
       <PackageReference Include="Titanium.Web.Proxy" Version="3.2.2-beta" />
     </ItemGroup>
 
