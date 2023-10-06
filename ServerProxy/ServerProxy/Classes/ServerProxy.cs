@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Reflection.Metadata;
 using System.Text;
 using HtmlAgilityPack;
 using Titanium.Web.Proxy.EventArguments;
@@ -9,10 +10,11 @@ namespace ServerProxy.Classes;
 
 public class ServerProxy
 {
+    private ProxyServer _proxyServer = new ProxyServer();
+    
     private static async Task OnBeforeRequest(object sender, SessionEventArgs e)
     {
         var hostname = e.HttpClient.Request.RequestUri.Host.ToLower();
-        // Console.WriteLine(GetHostname(hostname));
         
         if (IsSiteWithHPKP(hostname))
         {
@@ -88,33 +90,38 @@ public class ServerProxy
     
     public void StartProxyServer(int port)
     {
-        var proxyServer = new ProxyServer();
-
-        proxyServer.BeforeRequest += OnBeforeRequest;
-        proxyServer.BeforeResponse += OnBeforeResponse;
+        _proxyServer.BeforeRequest += OnBeforeRequest;
+        _proxyServer.BeforeResponse += OnBeforeResponse;
         
         if (port > 1 && port < 100000)
         {
             var explicitEndPoint = new ExplicitProxyEndPoint(System.Net.IPAddress.Any, port, true);
 
-            proxyServer.AddEndPoint(explicitEndPoint);
-            proxyServer.Start();
+            _proxyServer.AddEndPoint(explicitEndPoint);
+            _proxyServer.Start();
 
-            proxyServer.CertificateManager.CreateRootCertificate();
+            _proxyServer.CertificateManager.CreateRootCertificate();
 
-            proxyServer.CertificateManager.TrustRootCertificate(true);
+            _proxyServer.CertificateManager.TrustRootCertificate(true);
 
-            Console.WriteLine($"Proxy server listening on port {port}. Press any key to exit...");
+            Console.WriteLine($"\n[INFO]Proxy server listening on port {port}. Press any key to exit...");
             
             Console.ReadKey();
 
-            proxyServer.Stop();
+            StopProxyServer(this, 8888);
+            
             return;
         }
 
-        Console.WriteLine($"Your proxy port {port} doesnt exist.");
+        Console.WriteLine($"\n\n[INFO]Your proxy port {port} doesnt exist.");
     }
 
+    public void StopProxyServer(ServerProxy serverProxy, int port)
+    {
+        serverProxy._proxyServer.Stop();
+        Console.WriteLine($"\n\n[INFO]Your proxy-server on {port} has stopped");
+    }
+    
     private static string GetHostname(string hostname)
     {
         return hostname.Split(".").Length switch
