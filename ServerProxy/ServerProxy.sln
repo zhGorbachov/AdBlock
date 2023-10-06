@@ -2,8 +2,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ServerProxy", "ServerProxy\ServerProxy.csproj", "{CEB6D00A-F0D1-4E3B-ABBA-EE3C2FF3F9CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Interface", "Interface\Interface.csproj", "{4432E189-46B7-4D56-81FE-A76F50D7045D}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -14,9 +12,5 @@ Global
 		{CEB6D00A-F0D1-4E3B-ABBA-EE3C2FF3F9CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEB6D00A-F0D1-4E3B-ABBA-EE3C2FF3F9CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CEB6D00A-F0D1-4E3B-ABBA-EE3C2FF3F9CC}.Release|Any CPU.Build.0 = Release|Any CPU
-		{4432E189-46B7-4D56-81FE-A76F50D7045D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{4432E189-46B7-4D56-81FE-A76F50D7045D}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{4432E189-46B7-4D56-81FE-A76F50D7045D}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{4432E189-46B7-4D56-81FE-A76F50D7045D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
