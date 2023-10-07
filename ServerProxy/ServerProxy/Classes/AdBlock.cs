@@ -38,7 +38,6 @@ public static class AdBlock
 
     private static string ConvertPatternToXPath(string pattern)
     {
-        
         if (pattern.StartsWith("."))
         {
             var txt = $"//*[contains(@class, '{pattern.Remove(0, 1)}')]";
@@ -61,7 +60,6 @@ public static class AdBlock
             if (e.HttpClient.Request.RequestUri.ToString().Contains(urlpath))
             {
                 e.Ok(string.Empty);
-                // Console.WriteLine($"{urlpath}:    i1.ytimg.com");
             }
         }
     }
@@ -79,5 +77,4 @@ public static class AdBlock
 
         return doc.DocumentNode.OuterHtml;
     }
-
 }
