@@ -50,5 +50,7 @@ I work with browser LibreWolf with built-in connection to a proxy server, as it 
 ## 📋 Extension:
 To add additional domains or paths for blocking, modify the list in the OnBeforeRequest and OnBeforeResponse method
 
+## 💾 Presenation of project:
+https://docs.google.com/presentation/d/14MqVbUBDD6N3YTe1NZDfvhvGp_g218iS8KobB0WDGf0/edit?usp=sharing
 
 ## 🎈 And after it confirms, you can start to work with Adblocker, enjoy...
