@@ -15,6 +15,7 @@ public class ServerProxy
     private static async Task OnBeforeRequest(object sender, SessionEventArgs e)
     {
         var hostname = e.HttpClient.Request.RequestUri.Host.ToLower();
+        Logger.LogHostnamePage(hostname);
         
         await AdBlock.RemoveAdByUrlpath(e);
         
@@ -28,7 +29,7 @@ public class ServerProxy
             e.Ok("Ad blocked");
         }
         
-        if (e.HttpClient.Request.RequestUri.ToString().Contains("blocked_path"))
+        if (e.HttpClient.Request.RequestUri.ToString().Contains("Ad"))
         {
             Logger.LogBlockedAd(e.HttpClient.Request.Host);
         }
@@ -49,8 +50,8 @@ public class ServerProxy
 
         AdBlock.RemoveAdByXpath(doc);
 
-        var modifiedBodyString = AdBlock.RemoveAdsFromYouTubeMainPage(doc);
         // var modifiedBodyString = doc.DocumentNode.OuterHtml;
+        var modifiedBodyString = AdBlock.RemoveAdsFromYouTubeMainPage(doc);
         var modifiedBodyBytes = Encoding.UTF8.GetBytes(modifiedBodyString);
 
         e.SetResponseBody(modifiedBodyBytes);
@@ -117,16 +118,5 @@ public class ServerProxy
     {
         serverProxy._proxyServer.Stop();
         Console.WriteLine($"\n\n[INFO]Your proxy-server on {port} has stopped");
-    }
-    
-    private static string GetHostname(string hostname)
-    {
-        return hostname.Split(".").Length switch
-        {
-            2 => $"You are on: {hostname.Split(".")[0]}",
-            3 => $"You are on: {hostname.Split(".")[1]}",
-            4 => $"You are on: {hostname.Split(".")[2]}",
-            _ => $"You are on: {hostname}"
-        };
     }
 }
