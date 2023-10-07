@@ -19,3 +19,5 @@ s.cummerata.link
 v.strosin.biz
 i3.ytimg.com
 i2.ytimg.com
+mc.yandex.ru
+tpc.googlesyndication.com
