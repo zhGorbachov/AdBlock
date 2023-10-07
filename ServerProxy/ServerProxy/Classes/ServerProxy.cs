@@ -16,20 +16,16 @@ public class ServerProxy
     {
         var hostname = e.HttpClient.Request.RequestUri.Host.ToLower();
         
+        await AdBlock.RemoveAdByUrlpath(e);
+        
         if (IsSiteWithHPKP(hostname))
         {
             return;
         }
-
+        
         if (AdBlock.IsAdRequest(e.HttpClient.Request.RequestUri.ToString()))
         {
             e.Ok("Ad blocked");
-        }
-        
-        if (AdBlock.RemoveAdByUrlpath(e))
-        {
-            e.Ok("Ad blocked by proxy");
-            return;
         }
         
         if (e.HttpClient.Request.RequestUri.ToString().Contains("blocked_path"))
@@ -47,13 +43,14 @@ public class ServerProxy
 
         var bodyBytes = await e.GetResponseBody();
         var bodyString = Encoding.UTF8.GetString(bodyBytes);
-
+        
         var doc = new HtmlAgilityPack.HtmlDocument();
         doc.LoadHtml(bodyString);
 
         AdBlock.RemoveAdByXpath(doc);
 
-        var modifiedBodyString = doc.DocumentNode.OuterHtml;
+        var modifiedBodyString = AdBlock.RemoveAdsFromYouTubeMainPage(doc);
+        // var modifiedBodyString = doc.DocumentNode.OuterHtml;
         var modifiedBodyBytes = Encoding.UTF8.GetBytes(modifiedBodyString);
 
         e.SetResponseBody(modifiedBodyBytes);
