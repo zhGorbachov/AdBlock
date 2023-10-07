@@ -73,6 +73,7 @@
 //a[contains(@class, 'ad-skip-link')]
 //div[contains(@class, 'adw-mascot--container')]
 //*[contains(@src, 'cdn.servertraff.com')]
+//*[contains(@src, 'https://cdn.servertraff.com/')]
 //video[contains(@src, 'cdn.servertraff.com')]
 //*[contains(@a, 'srv224.com')]
 //*[contains(@style, 'height: 250px; overflow: hidden; width: 680px;')]

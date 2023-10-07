@@ -13,6 +13,8 @@ static.doubleclick.net
 i1.ytimg.com
 cdn.servertraff.com
 servertraff.com
+cdn.servetraff.com
+servetraff.com
 ad.doubleclick.net
 srv224.com
 s.cummerata.link
