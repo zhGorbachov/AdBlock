@@ -14,28 +14,6 @@ public static class AdBlock
         return Regex.IsMatch(url, @"/ad(s|verts?|vertising)?[-._]?banner(s?)|pop[-._]?up(s?)|tracker/", RegexOptions.IgnoreCase);
     }
     
-    public static bool ContainsAds(string responseBody)
-    {
-        var filterListContentEn = File.ReadAllText("../../../Filter/list2.txt");
-        var filterListContentRu = File.ReadAllText("../../../Filter/list3.txt");
-        
-        var filtersEn = filterListContentEn.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        var filtersRu = filterListContentRu.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-        var filters = filtersEn.Concat(filtersRu);
-        
-        foreach(var filter in filters)
-        {
-            if (responseBody.Contains(filter))
-            {
-                Console.WriteLine(filter);
-                Console.WriteLine("Ban ad");
-                return true;
-            }
-        }
-
-        return false;
-    }
-    
     private static void RemoveNodes(HtmlDocument doc, string xpath)
     {
         var nodesToRemove = doc.DocumentNode.SelectNodes(xpath);
@@ -54,10 +32,10 @@ public static class AdBlock
     {
         foreach (var filter in _xpathList.Select(xpath => xpath.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)))
         {
-            AdBlock.RemoveNodes(doc, ConvertPatternToXPath(filter[0]));
+            RemoveNodes(doc, ConvertPatternToXPath(filter[0]));
         }
     }
-    
+
     private static string ConvertPatternToXPath(string pattern)
     {
         
@@ -76,8 +54,30 @@ public static class AdBlock
         }
     }
 
-    public static bool RemoveAdByUrlpath(SessionEventArgs e)
+    public static async Task RemoveAdByUrlpath(SessionEventArgs e)
     {
-        return _urlpathList.Any(adPath => e.HttpClient.Request.RequestUri.ToString().Contains(adPath));
+        foreach (var urlpath in _urlpathList)
+        {
+            if (e.HttpClient.Request.RequestUri.ToString().Contains(urlpath))
+            {
+                e.Ok(string.Empty);
+                // Console.WriteLine($"{urlpath}:    i1.ytimg.com");
+            }
+        }
     }
+    
+    public static string RemoveAdsFromYouTubeMainPage(HtmlDocument doc)
+    {
+        var adNodes = doc.DocumentNode.SelectNodes("//*[text()='Ad']");
+        if (adNodes != null)
+        {
+            foreach (var node in adNodes)
+            {
+                node.ParentNode.Remove();
+            }
+        }
+
+        return doc.DocumentNode.OuterHtml;
+    }
+
 }
